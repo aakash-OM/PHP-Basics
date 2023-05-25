@@ -1,0 +1,74 @@
+<?php
+// Database connection parameters
+$servername = "localhost";
+$username = "your_username";
+$password = "your_password";
+$dbname = "your_database_name";
+
+// Create connection
+$conn = mysqli_connect($servername, $username, $password, $dbname);
+
+// Check connection
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+
+// Task 2: Retrieve all records from the students table and display them in a table format
+$sql = "SELECT * FROM students";
+$result = mysqli_query($conn, $sql);
+
+if (mysqli_num_rows($result) > 0) {
+    echo "<table>";
+    echo "<tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Address</th></tr>";
+    while ($row = mysqli_fetch_assoc($result)) {
+        echo "<tr><td>" . $row["id"] . "</td><td>" . $row["name"] . "</td><td>" . $row["email"] . "</td><td>" . $row["phone"] . "</td><td>" . $row["address"] . "</td></tr>";
+    }
+    echo "</table>";
+} else {
+    echo "0 results";
+}
+
+// Task 3: Add a new student record to the students table using a web form
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $name = $_POST["name"];
+    $email = $_POST["email"];
+    $phone = $_POST["phone"];
+    $address = $_POST["address"];
+
+    // Validate form data
+    if (empty($name) || empty($email) || empty($phone) || empty($address)) {
+        echo "Please fill out all fields.";
+    } else {
+        // Insert new student record into the database
+        $sql = "INSERT INTO students (name, email, phone, address) VALUES ('$name', '$email', '$phone', '$address')";
+        if (mysqli_query($conn, $sql)) {
+            echo "New record created successfully.";
+        } else {
+            echo "Error: " . $sql . "<br>" . mysqli_error($conn);
+        }
+    }
+}
+
+// Task 4: Retrieve a specific student record based on the id field
+if (isset($_GET["id"])) {
+    $id = $_GET["id"];
+    $sql = "SELECT * FROM students WHERE id='$id'";
+    $result = mysqli_query($conn, $sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        echo "<p>Record found:</p>";
+        echo "<p>ID: " . $row["id"] . "</p>";
+        echo "<p>Name: " . $row["name"] . "</p>";
+        echo "<p>Email: " . $row["email"] . "</p>";
+        echo "<p>Phone: " . $row["phone"] . "</p>";
+        echo "<p>Address: " . $row["address"] . "</p>";
+    } else {
+        echo "Record not found.";
+    }
+}
+
+// Close database connection
+mysqli_close($conn);
+?>
+
+To retrieve a specific student record, you can pass the ID of the student as a parameter in the URL, like this: http://yourdomain.com/yourfile.php?id=1. This will display the details of the student with ID 1. You can replace the number 1 with the ID of the student you want to retrieve.
