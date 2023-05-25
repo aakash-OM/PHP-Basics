@@ -11,18 +11,6 @@ if ($conn->connect_error) {
   die("Connection failed: " . $conn->connect_error);
 }
 
-// Task 1: Create Database and table
-
-$sql = "CREATE DATABASE Record";
-if (mysqli_query($conn, $sql)) {
-    echo "Database created successfully";
-} else {
-    echo "Error creating database: " . mysqli_error($conn);
-}
-$dbname = "students";
-mysqli_select_db($conn, $dbname);
-
-
 // Create the students table if it does not exist
 $sql_create_table = "CREATE TABLE IF NOT EXISTS students (
 id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -35,12 +23,18 @@ if ($conn->query($sql_create_table) === FALSE) {
   echo "Error creating table: " . $conn->error;
 }
 
-// Insert some sample data into the students table
-$sql_insert_data = "INSERT INTO students (name, email, phone, address)
-VALUES ('John Doe', 'john.doe@example.com', '1234567890', '123 Main St, Anytown, USA'),
-       ('Jane Smith', 'jane.smith@example.com', '0987654321', '456 Oak Ave, Anycity, USA')";
+if ($_SERVER['REQUEST_METHOD']=='POST'){
+  $name=$_POST['f_name'];
+  $email=$_POST['email'];
+  $phone=$_POST['phone'];
+  $address=$_POST['address'];
+
+$sql_insert_data = "INSERT INTO students (f_name, email, phone, address)
+values($name, $email, $phone, $address)";
 if ($conn->query($sql_insert_data) === FALSE) {
   echo "Error inserting data: " . $conn->error;
+}
+
 }
 
 // Retrieve data from students table
@@ -51,7 +45,7 @@ $result = $conn->query($sql_select_data);
 if ($result->num_rows > 0) {
   echo "<table><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Address</th></tr>";
   while($row = $result->fetch_assoc()) {
-    echo "<tr><td>".$row["id"]."</td><td>".$row["name"]."</td><td>".$row["email"]."</td><td>".$row["phone"]."</td><td>".$row["address"]."</td></tr>";
+    echo "<tr><td>".$row["id"]."</td><td>".$row["f_name"]."</td><td>".$row["email"]."</td><td>".$row["phone"]."</td><td>".$row["address"]."</td></tr>";
   }
   echo "</table>";
 } else {
@@ -61,12 +55,12 @@ if ($result->num_rows > 0) {
 // Task 3: Add a new student record to the students table using a web form
   
   if (isset($_POST["submit"])) {
-    $name = $_POST["name"];
+    $f_name = $_POST["f_name"];
     $email = $_POST["email"];
     $phone = $_POST["phone"];
     $address = $_POST["address"];
-    $sql_insert_record = "INSERT INTO students (name, email, phone, address)
-    VALUES ('$name', '$email', '$phone', '$address')";
+    $sql_insert_record = "INSERT INTO students (f_name, email, phone, address)
+    VALUES ('$f_name', '$email', '$phone', '$address')";
     if ($conn->query($sql_insert_record) === FALSE) {
       echo "Error inserting record: " . $conn->error;
     } else {
@@ -83,7 +77,7 @@ if (isset($_GET["id"])) {
         $row = mysqli_fetch_assoc($result);
         echo "<p>Record found:</p>";
         echo "<p>ID: " . $row["id"] . "</p>";
-        echo "<p>Name: " . $row["name"] . "</p>";
+        echo "<p>Name: " . $row["f_name"] . "</p>";
         echo "<p>Email: " . $row["email"] . "</p>";
         echo "<p>Phone: " . $row["phone"] . "</p>";
         echo "<p>Address: " . $row["address"] . "</p>";
@@ -96,16 +90,16 @@ if (isset($_GET["id"])) {
 // Task 5 - Update existing student record
 if (isset($_POST['update'])) {
   $id = $_POST['id'];
-  $name = $_POST['name'];
+  $f_name = $_POST['f_name'];
   $email = $_POST['email'];
   $phone = $_POST['phone'];
   $address = $_POST['address'];
 
   // Validate form data
-  if (empty($name) || empty($email) || empty($phone) || empty($address)) {
+  if (empty($f_name) || empty($email) || empty($phone) || empty($address)) {
       echo "All fields are required";
   } else {
-      $sql = "UPDATE students SET name='$name', email='$email', phone='$phone', address='$address' WHERE id=$id";
+      $sql = "UPDATE students SET f_name='$f_name', email='$email', phone='$phone', address='$address' WHERE id=$id";
       if (mysqli_query($conn, $sql)) {
           echo "Record updated successfully";
       } else {
@@ -124,7 +118,7 @@ $conn->close();
 <h2>Add New Student Record</h2>
   <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
     <label>Name:</label>
-    <input type="text" name="name" required><br><br>
+    <input type="text" name="f_name" required><br><br>
     <label>Email:</label>
     <input type="email" name="email" required><br><br>
     <label>Phone:</label>
@@ -133,15 +127,14 @@ $conn->close();
     <textarea name="address" rows="4" cols="50" required></textarea><br><br>
     <input type="submit" name="submit" value="Submit">
   </form>
-</body>
-</html>
+
 
 
 
 <form action="update.php" method="post">
   <input type="hidden" name="id" value="<?php echo $student['id']; ?>">
   <label for="name">Name:</label>
-  <input type="text" name="name" value="<?php echo $student['name']; ?>" required><br>
+  <input type="text" name="f_name" value="<?php echo $student['f_name']; ?>" required><br>
   <label for="email">Email:</label>
   <input type="email" name="email" value="<?php echo $student['email']; ?>" required><br>
   <label for="phone">Phone:</label>
@@ -150,3 +143,6 @@ $conn->close();
   <input type="text" name="address" value="<?php echo $student['address']; ?>" required><br>
   <input type="submit" value="Update">
 </form>
+
+</body>
+</html>
